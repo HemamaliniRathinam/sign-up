@@ -1,3 +1,5 @@
+import path from "path";
+import express from "express";
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
@@ -5,6 +7,13 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const app = express();
+
+app.use(express.static("public"));
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve("public", "index.html"));
+});
+
+
 app.use(cors());
 app.use(bodyParser.json());
 
