@@ -10,31 +10,9 @@ const app = express();
 // Middlewares
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.json());
 
-// Serve frontend (React) if built and placed in "public"
+// Serve frontend (React build)
 app.use(express.static(path.join(__dirname, "public")));
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "public", "index.html"));
-});
-
-// Connect to MySQL using environment variables
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT || 3306,
-});
-
-// Test DB connection
-db.connect((err) => {
-  if (err) {
-    console.error("Database connection failed:", err);
-    return;
-  }
-  console.log("Connected to MySQL!");
-});
 
 // API route for signup
 app.post("/signup", (req, res) => {
@@ -50,7 +28,29 @@ app.post("/signup", (req, res) => {
   });
 });
 
-// Start server
+// Catch-all route for React Router
+app.get("/*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Database connection
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT
+});
+
+db.connect((err) => {
+  if (err) {
+    console.error("Database connection failed:", err);
+    return;
+  }
+  console.log("Connected to Railway MySQL!");
+});
+
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
