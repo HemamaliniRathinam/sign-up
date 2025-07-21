@@ -1,55 +1,56 @@
-import path from "path";
-import express from "express";
-const express = require('express');
-const cors = require('cors');
-const mysql = require('mysql2');
-const bodyParser = require('body-parser');
-require('dotenv').config();
+const path = require("path");
+const express = require("express");
+const cors = require("cors");
+const mysql = require("mysql2");
+const bodyParser = require("body-parser");
+require("dotenv").config();
 
 const app = express();
 
-app.use(express.static("public"));
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve("public", "index.html"));
-});
-
-
+// Middlewares
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.json());
 
-// Connect to Railway MySQL using .env variables
+// Serve frontend (React) if built and placed in "public"
+app.use(express.static(path.join(__dirname, "public")));
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "public", "index.html"));
+});
+
+// Connect to MySQL using environment variables
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT
+  port: process.env.DB_PORT || 3306,
 });
 
-// Test the DB connection
+// Test DB connection
 db.connect((err) => {
   if (err) {
-    console.error('Database connection failed:', err);
+    console.error("Database connection failed:", err);
     return;
   }
-  console.log('Connected to Railway MySQL!');
+  console.log("Connected to MySQL!");
 });
 
 // API route for signup
-app.post('/signup', (req, res) => {
+app.post("/signup", (req, res) => {
   const { username, email, phone } = req.body;
 
   const sql = "INSERT INTO users (username, email, phone) VALUES (?, ?, ?)";
   db.query(sql, [username, email, phone], (err, result) => {
     if (err) {
-      console.error('Error inserting user:', err);
-      return res.status(500).send('Database error');
+      console.error("Error inserting user:", err);
+      return res.status(500).send("Database error");
     }
     res.send("User registered successfully!");
   });
 });
 
-// Start the server
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
