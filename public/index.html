@@ -4,94 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      width: 300px;
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"] {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Register</h2>
-    <form id="signupForm">
-      <input type="text" id="username" placeholder="Username" required />
-      <input type="email" id="email" placeholder="Email" required />
-      <input type="tel" id="phone" placeholder="Phone" required />
-      <button type="submit">Register</button>
-    </form>
-  </div>
+  <h2>Register</h2>
+  <form id="signupForm">
+    <input type="text" name="username" placeholder="Name" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <input type="text" name="phone" placeholder="Phone" required />
+    <button type="submit">Register</button>
+  </form>
+  <p id="responseMsg"></p>
 
   <script>
     document.getElementById("signupForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const formData = {
-        username: document.getElementById("username").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        phone: document.getElementById("phone").value.trim(),
+        username: e.target.username.value,
+        email: e.target.email.value,
+        phone: e.target.phone.value
       };
 
-      try {
-        const res = await fetch("/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
+      const res = await fetch("/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          alert("Error: " + data.message);
-        } else {
-          alert(data.message);
-          document.getElementById("signupForm").reset();
-        }
-      } catch (error) {
-        alert("Server error. Please try again.");
-        console.error(error);
-      }
+      const msg = await res.text();
+      document.getElementById("responseMsg").textContent = msg;
+      e.target.reset(); // clear form
     });
   </script>
 </body>
 </html>
-
-
-
