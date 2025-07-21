@@ -11,47 +11,54 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Serve frontend (React build)
+// Serve static files (HTML/CSS/JS) from "public"
 app.use(express.static(path.join(__dirname, "public")));
 
-// API route for signup
-app.post("/signup", (req, res) => {
-  const { username, email, phone } = req.body;
-
-  const sql = "INSERT INTO users (username, email, phone) VALUES (?, ?, ?)";
-  db.query(sql, [username, email, phone], (err, result) => {
-    if (err) {
-      console.error("Error inserting user:", err);
-      return res.status(500).send("Database error");
-    }
-    res.send("User registered successfully!");
-  });
-});
-
-// Catch-all route for React Router
-app.get("/*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-// Database connection
+// MySQL Connection
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  port: process.env.DB_PORT
+  port: process.env.DB_PORT,
 });
 
 db.connect((err) => {
   if (err) {
     console.error("Database connection failed:", err);
-    return;
+  } else {
+    console.log("Connected to Railway MySQL!");
   }
-  console.log("Connected to Railway MySQL!");
 });
 
-// Start the server
+// API: Handle signup form
+app.post("/signup", (req, res) => {
+  const { username, email, phone } = req.body;
+
+  if (!username || !email || !phone) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  const sql = "INSERT INTO users (username, email, phone) VALUES (?, ?, ?)";
+  db.query(sql, [username, email, phone], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res
+        .status(500)
+        .json({ message: "Database error: " + (err.code || "Unknown error") });
+    }
+    res.json({ message: "User registered successfully!" });
+  });
+});
+
+// Catch-all route (React Router or direct HTML navigation)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
